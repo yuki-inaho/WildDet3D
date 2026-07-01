@@ -36,12 +36,21 @@ else:
 try:
     import spaces
 except ImportError:
-    # Local run (not on HF Spaces) - create dummy decorator
+    # Local run (not on HF Spaces) - create dummy decorator.
+    # Must support BOTH bare `@spaces.GPU` and parameterized
+    # `@spaces.GPU(duration=...)`. The bare form calls GPU(fn) directly,
+    # so we must return `fn` unchanged in that case (otherwise the handler
+    # gets replaced by the inner `decorator`, which only takes 1 arg and
+    # breaks every Gradio callback).
     class _Spaces:
         @staticmethod
         def GPU(*args, **kwargs):
+            if len(args) == 1 and callable(args[0]) and not kwargs:
+                return args[0]  # bare usage: @spaces.GPU
+
             def decorator(fn):
                 return fn
+
             return decorator
     spaces = _Spaces()
 

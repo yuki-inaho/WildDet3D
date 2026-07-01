@@ -1,0 +1,73 @@
+[project]
+name = "wilddet3d"
+version = "0.1.0"
+description = "WildDet3D: Scaling Promptable 3D Detection in the Wild (uv environment)"
+requires-python = "==3.11.*"
+dependencies = [
+    # Core (torch/torchvision pinned to the tested CUDA 12.1 combination)
+    "torch==2.5.1",
+    "torchvision==0.20.1",
+    "numpy",
+    "Pillow",
+    # Model dependencies
+    "einops",
+    "timm",
+    "transformers",
+    "utils3d",
+    "huggingface_hub",
+    # third_party/sam3 transitive deps (sam3 loaded via sys.path, not pip-installed)
+    "ftfy==6.1.1",
+    "regex",
+    "iopath>=0.1.10",
+    "typing_extensions",
+    # sam3/model_builder.py still imports pkg_resources (removed from setuptools 80+)
+    "setuptools<80",
+    # Depth backend
+    "opencv-python",
+    # Visualization
+    "matplotlib",
+    # Eval
+    "pycocotools",
+    "pyquaternion",
+    "scipy",
+    "terminaltables",
+    "ml_collections",
+    "tqdm",
+    "shapely",
+    # Training data prep (Waymo v2 parquet; CA1M tar processing)
+    "pyarrow",
+    # Training / eval framework
+    "vis4d==1.0.0",
+]
+
+# Extra deps for the Gradio demo (demo/huggingface/app.py). Install with:
+#   uv sync --group demo
+# gradio 5 needs pydantic>=2; vis4d==1.0.0 *declares* pydantic<2 but never
+# imports pydantic (verified), so the override below is safe at runtime.
+[dependency-groups]
+demo = [
+    "gradio>=5.0.0,<6",
+    "trimesh",
+    "pygltflib",
+    "open-clip-torch",
+]
+
+# This repo is used in-place (import `wilddet3d` from the source tree with
+# PYTHONPATH=repo root, as the README does). uv only manages dependencies;
+# it does not build/install the wilddet3d source tree itself.
+[tool.uv]
+package = false
+# Force pydantic 2 for the whole env so the demo group (gradio 5) can coexist
+# with vis4d==1.0.0's declared pydantic<2 pin. vis4d does not import pydantic,
+# and the inference path was re-verified to work under pydantic 2.
+override-dependencies = ["pydantic>=2"]
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu121" }]
+torchvision = [{ index = "pytorch-cu121" }]
+utils3d = { git = "https://github.com/EasternJournalist/utils3d.git" }
+
+[[tool.uv.index]]
+name = "pytorch-cu121"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true

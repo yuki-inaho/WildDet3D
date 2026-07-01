@@ -3,6 +3,14 @@ __pycache__/
 *.pyc
 vis4d-workspace/
 
+# uv environment (managed by pyproject.toml + uv.lock; do not commit the venv)
+.venv/
+# local inference outputs
+outputs/
+# Playwright CLI workspace / artifacts (screenshots, snapshots, config)
+.playwright/
+.playwright-cli/
+
 # Local-only data + pretrained (users bring their own)
 data/
 pretrained/
